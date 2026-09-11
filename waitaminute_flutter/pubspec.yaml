@@ -38,6 +38,8 @@ dependencies:
     path: ../waitaminute_serverpod/waitaminute_serverpod_client
   serverpod_flutter: 3.4.13
   google_fonts: ^8.2.1
+  url_launcher: ^6.3.2
+  flutter_markdown: ^0.7.7+1
 
 dev_dependencies:
   flutter_test:

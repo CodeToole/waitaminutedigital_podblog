@@ -79,6 +79,26 @@ class ServerpodService {
     return list;
   }
 
+  /// Fetches a single published article by its unique slug (with local fallback).
+  Future<Article?> fetchArticleBySlug(String slug) async {
+    try {
+      final article = await client.content.getArticleBySlug(slug);
+      if (article != null) {
+        isConnected = true;
+        return article;
+      }
+    } catch (e) {
+      debugPrint('Serverpod getArticleBySlug error, using local fallback: $e');
+      isConnected = false;
+    }
+
+    try {
+      return _localArticles.firstWhere((a) => a.slug == slug);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Submits a lead inquiry to the backend.
   Future<LeadInquiry> submitLead(LeadInquiry inquiry) async {
     try {

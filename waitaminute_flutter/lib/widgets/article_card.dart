@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:waitaminute_serverpod_client/waitaminute_serverpod_client.dart';
+import '../screens/article_reader_screen.dart';
 import '../theme/app_theme.dart';
 import 'badge_tag.dart';
 
@@ -14,6 +15,19 @@ class ArticleCard extends StatelessWidget {
     required this.article,
     this.onTap,
   });
+
+  void _handleTap(BuildContext context) {
+    if (onTap != null) {
+      onTap!();
+    } else {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ArticleReaderScreen(article: article),
+          settings: RouteSettings(name: '/article/${article.slug}'),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +46,7 @@ class ArticleCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
+          onTap: () => _handleTap(context),
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
@@ -64,6 +78,7 @@ class ArticleCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
+
                 // Article Title
                 Text(
                   article.title,
@@ -75,6 +90,7 @@ class ArticleCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
+
                 // Summary snippet
                 Text(
                   article.summary,
@@ -87,25 +103,34 @@ class ArticleCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 14),
-                // Action link
-                Row(
-                  children: [
-                    Text(
-                      'READ ARTICLE',
-                      style: GoogleFonts.spaceMono(
-                        color: AppTheme.badgeColor(article.badge),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.1,
-                      ),
+
+                // Action link ("READ ARTICLE >")
+                InkWell(
+                  borderRadius: BorderRadius.circular(4),
+                  onTap: () => _handleTap(context),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'READ ARTICLE',
+                          style: GoogleFonts.spaceMono(
+                            color: AppTheme.badgeColor(article.badge),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 11,
+                          color: AppTheme.badgeColor(article.badge),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 11,
-                      color: AppTheme.badgeColor(article.badge),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),

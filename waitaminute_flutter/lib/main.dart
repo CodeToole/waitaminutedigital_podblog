@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:waitaminute_serverpod_client/waitaminute_serverpod_client.dart';
 import 'admin/admin_auth_gate.dart';
+import 'screens/article_reader_screen.dart';
 import 'services/serverpod_service.dart';
 import 'theme/app_theme.dart';
 import 'widgets/article_card.dart';
@@ -40,6 +41,16 @@ class WaitaminuteApp extends StatelessWidget {
         if (settings.name == '/admin') {
           return MaterialPageRoute(
             builder: (_) => const AdminAuthGate(),
+            settings: settings,
+          );
+        }
+        if (settings.name != null && settings.name!.startsWith('/article/')) {
+          final slug = settings.name!.replaceFirst('/article/', '');
+          return MaterialPageRoute(
+            builder: (_) => ArticleReaderScreen(
+              article: settings.arguments as Article?,
+              slug: slug,
+            ),
             settings: settings,
           );
         }
@@ -481,17 +492,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               return ArticleCard(
                                 article: article,
                                 onTap: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      backgroundColor: AppTheme.surfaceElevated,
-                                      content: Text(
-                                        'Reading: ${article.title}',
-                                        style: GoogleFonts.spaceMono(
-                                          color: AppTheme.neonCyan,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      duration: const Duration(seconds: 1),
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => ArticleReaderScreen(article: article),
+                                      settings: RouteSettings(name: '/article/${article.slug}'),
                                     ),
                                   );
                                 },
