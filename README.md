@@ -33,35 +33,27 @@ waitaminutedigital_podblog/
 │
 └── waitaminute_flutter/              # Flutter 3 Client (Web & Mobile)
     ├── lib/
-    │   ├── admin/                    # Admin Control Center (Dispatches, Highlights, Leads)
-    │   │   ├── admin_auth_gate.dart  # Direct URL PIN protection gate (/admin)
-    │   │   ├── admin_layout.dart     # Responsive tabbed control center
-    │   │   ├── articles_manager.dart # Editorial article management (CRUD)
-    │   │   ├── highlights_manager.dart # Project highlight showcase management
-    │   │   └── inquiries_viewer.dart # Prospect intake inquiries viewer
-    │   ├── models/                   # Local domain models & fallback seeds
-    │   ├── services/                 # ServerpodClient singleton & offline fallback service
-    │   ├── theme/                    # Cyber-editorial palette (#0A0A0C, #7928CA, #00DFD8)
-    │   ├── widgets/                  # PeekingCarousel (4:5 media cards), ArticleCard, LeadIntakeModal
-    │   └── main.dart                 # App initialization, routing & home dashboard
+    │   ├── models/                   # Domain models & fallback data
+    │   ├── services/                 # Serverpod client & connectivity
+    │   ├── theme/                    # Cyber-editorial design tokens
+    │   ├── widgets/                  # UI components (Peeking carousel, article cards)
+    │   └── main.dart                 # Application entrypoint & navigation
     └── assets/img/                   # Robot mascot branding & media assets
 ```
 
 ### 1. All-in-One Container Backend (`waitaminute_serverpod`)
 - **Serverpod Endpoints**:
-  - `ArticleEndpoint`: Public article retrieval with category filtering, plus administrative CRUD for drafting and publishing articles.
-  - `ProjectHighlightEndpoint`: Featured case studies and portfolio showcase management.
-  - `LeadEndpoint`: Public consultation intake form submission with honeypot spam protection, plus secure administrative review of prospect leads.
+  - `ArticleEndpoint`: Public article retrieval with category filtering, reading time estimation, and markdown rendering.
+  - `ProjectHighlightEndpoint`: Featured case studies and portfolio project delivery.
+  - `LeadEndpoint`: Public consultation intake form submission with honeypot spam protection and validation.
 - **Single-Command Docker Orchestration**: Local development provisions containerized PostgreSQL and Redis automatically.
 - **Type Safety**: Database tables, serialized JSON, and Flutter client bindings are compiled directly from declarative YAML models via `serverpod generate`.
 
 ### 2. Modern Editorial Client (`waitaminute_flutter`)
 - **Responsive Cyber-Editorial UI**: Dark aesthetic engineered with `#0A0A0C` background, `#16161E` elevated surfaces, neon violet/cyan gradients, and typography powered by Google Fonts.
 - **IGN-Style Peeking Carousel**: Desktop-constrained 4:5 portrait media cards (~300px x 400px), floating directional arrows (`<` and `>`), smooth scrolling, and touch/mouse dragging support.
-- **Direct Route Admin Control Center (`/admin`)**:
-  - Pure route access: Navigating directly to `/admin` renders a dedicated PIN/Passphrase authentication gate.
-  - Zero visible links, badges, or secret triggers exposed on public pages.
-  - Full CRUD controls for editorial content, project case studies, and lead inquiries.
+- **Interactive Dispatches**: Dynamic category filtering (`ARCHITECTURE`, `POST-MORTEM`, `SHIPPED`, `DEVLOG`), article cards with reading duration badges, and full responsive grid scaling.
+- **Discovery Consultation Intake**: Integrated modal form for client project inquiries with instant validation.
 - **Resilient Offline Fallback**: Client gracefully operates against local memory caches if the backend container is offline.
 
 ---
@@ -93,13 +85,6 @@ flutter pub get
 flutter run -d chrome
 ```
 Open your browser at the assigned localhost port (e.g. `http://localhost:60428`).
-
-### 3. Accessing the Admin Panel
-Navigate directly in your browser address bar to:
-```
-http://localhost:60428/#/admin
-```
-Enter the master PIN (`2026`) or passphrase (`waitaminute`) to unlock the editorial control dashboard.
 
 ---
 
