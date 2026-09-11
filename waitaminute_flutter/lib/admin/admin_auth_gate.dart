@@ -19,17 +19,12 @@ class _AdminAuthGateState extends State<AdminAuthGate>
 
   bool _isAuthenticated = false;
   bool _isProcessing = false;
+  bool _obscureText = true;
   String? _errorMessage;
 
-  // Custom authorization credentials (overridable via compile-time environment flags)
-  static const String _customPin = String.fromEnvironment(
-    'ADMIN_PIN',
-    defaultValue: '84920173',
-  );
-  static const String _customPassphrase = String.fromEnvironment(
-    'ADMIN_PASSPHRASE',
-    defaultValue: 'waitaminutedigital-secure',
-  );
+  // Master authorization credentials
+  static const String _primaryPin = '84920173';
+  static const String _primaryPassphrase = 'waitaminutedigital-secure';
 
   @override
   void initState() {
@@ -62,35 +57,42 @@ class _AdminAuthGateState extends State<AdminAuthGate>
   Future<void> _verifyAccess() async {
     if (_isProcessing) return;
 
-    final input = _pinController.text.trim();
-    if (input.isEmpty) return;
+    // Sanitize input: strip all whitespace and invisible zero-width unicode characters
+    final rawInput = _pinController.text;
+    final sanitized = rawInput.trim().replaceAll(RegExp(r'[\s\u200B-\u200D\uFEFF]'), '');
+
+    if (sanitized.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter an authorization key.';
+      });
+      return;
+    }
 
     setState(() {
       _isProcessing = true;
       _errorMessage = null;
     });
 
-    // Check credentials (case-insensitive for passphrase, exact for PIN)
-    final isValid = input == _customPin ||
-        input.toLowerCase() == _customPassphrase.toLowerCase();
+    // Check against authorized credentials
+    final isMatch = sanitized == _primaryPin ||
+        sanitized.toLowerCase() == _primaryPassphrase.toLowerCase();
 
-    if (isValid) {
+    if (isMatch) {
       setState(() {
         _isAuthenticated = true;
         _errorMessage = null;
         _isProcessing = false;
       });
     } else {
-      // Trigger shake animation and enforce brief throttling delay against brute-forcing
+      // Trigger shake animation and throttling delay
       _shakeController.forward(from: 0.0);
-      await Future.delayed(const Duration(milliseconds: 450));
+      await Future.delayed(const Duration(milliseconds: 400));
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = 'Invalid authorization credentials. Access denied.';
+        _errorMessage = 'Invalid authorization key. Access denied.';
         _isProcessing = false;
       });
-      _pinController.clear();
     }
   }
 
@@ -223,21 +225,22 @@ class _AdminAuthGateState extends State<AdminAuthGate>
                     // PIN / Key Input Field
                     TextField(
                       controller: _pinController,
-                      obscureText: true,
+                      obscureText: _obscureText,
                       autofocus: true,
                       enabled: !_isProcessing,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.spaceMono(
                         color: Colors.white,
-                        fontSize: 22,
-                        letterSpacing: 8.0,
+                        fontSize: 20,
+                        letterSpacing: _obscureText ? 6.0 : 2.0,
                         fontWeight: FontWeight.w700,
                       ),
                       decoration: InputDecoration(
-                        hintText: '••••••••',
+                        hintText: _obscureText ? '••••••••' : 'Enter PIN / key',
                         hintStyle: GoogleFonts.spaceMono(
                           color: AppTheme.textMuted,
-                          letterSpacing: 8.0,
+                          letterSpacing: _obscureText ? 6.0 : 1.0,
+                          fontSize: 16,
                         ),
                         filled: true,
                         fillColor: const Color(0xFF181820),
@@ -250,6 +253,19 @@ class _AdminAuthGateState extends State<AdminAuthGate>
                           borderSide: const BorderSide(color: AppTheme.neonCyan, width: 1.5),
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            color: const Color(0xFF94A3B8),
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscureText = !_obscureText;
+                            });
+                          },
+                          tooltip: _obscureText ? 'Show key' : 'Hide key',
+                        ),
                       ),
                       onSubmitted: (_) => _verifyAccess(),
                     ),
