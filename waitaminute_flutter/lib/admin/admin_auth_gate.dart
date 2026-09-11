@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import 'admin_layout.dart';
 
-/// Cyber-editorial PIN / Passphrase Gate protecting access to the admin dashboard.
+/// Editorial authorization gate protecting access to the admin dashboard.
 class AdminAuthGate extends StatefulWidget {
   const AdminAuthGate({super.key});
 
@@ -11,31 +11,84 @@ class AdminAuthGate extends StatefulWidget {
   State<AdminAuthGate> createState() => _AdminAuthGateState();
 }
 
-class _AdminAuthGateState extends State<AdminAuthGate> {
+class _AdminAuthGateState extends State<AdminAuthGate>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _pinController = TextEditingController();
+  late final AnimationController _shakeController;
+  late final Animation<double> _shakeAnimation;
+
   bool _isAuthenticated = false;
+  bool _isProcessing = false;
   String? _errorMessage;
 
-  // Master credentials
-  static const String _defaultPin = '2026';
-  static const String _passphrase = 'waitaminute';
+  // Custom authorization credentials (overridable via compile-time environment flags)
+  static const String _customPin = String.fromEnvironment(
+    'ADMIN_PIN',
+    defaultValue: '84920173',
+  );
+  static const String _customPassphrase = String.fromEnvironment(
+    'ADMIN_PASSPHRASE',
+    defaultValue: 'waitaminutedigital-secure',
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _shakeController = AnimationController(
+      duration: const Duration(milliseconds: 450),
+      vsync: this,
+    );
+
+    _shakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -12.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -12.0, end: 12.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 12.0, end: -8.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -8.0, end: 8.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 8.0, end: -4.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -4.0, end: 0.0), weight: 1),
+    ]).animate(CurvedAnimation(
+      parent: _shakeController,
+      curve: Curves.easeInOut,
+    ));
+  }
 
   @override
   void dispose() {
+    _shakeController.dispose();
     _pinController.dispose();
     super.dispose();
   }
 
-  void _verifyAccess() {
-    final input = _pinController.text.trim().toLowerCase();
-    if (input == _defaultPin || input == _passphrase) {
+  Future<void> _verifyAccess() async {
+    if (_isProcessing) return;
+
+    final input = _pinController.text.trim();
+    if (input.isEmpty) return;
+
+    setState(() {
+      _isProcessing = true;
+      _errorMessage = null;
+    });
+
+    // Check credentials (case-insensitive for passphrase, exact for PIN)
+    final isValid = input == _customPin ||
+        input.toLowerCase() == _customPassphrase.toLowerCase();
+
+    if (isValid) {
       setState(() {
         _isAuthenticated = true;
         _errorMessage = null;
+        _isProcessing = false;
       });
     } else {
+      // Trigger shake animation and enforce brief throttling delay against brute-forcing
+      _shakeController.forward(from: 0.0);
+      await Future.delayed(const Duration(milliseconds: 450));
+      if (!mounted) return;
+
       setState(() {
-        _errorMessage = 'Invalid PIN / passphrase. Use 2026 or waitaminute.';
+        _errorMessage = 'Invalid authorization credentials. Access denied.';
+        _isProcessing = false;
       });
       _pinController.clear();
     }
@@ -89,166 +142,185 @@ class _AdminAuthGateState extends State<AdminAuthGate> {
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
-            child: Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: const Color(0xFF121216),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF26262B), width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.neonViolet.withValues(alpha: 0.12),
-                    blurRadius: 30,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Robot Mascot Avatar
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1A1A24),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppTheme.neonCyan.withValues(alpha: 0.5),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.neonCyan.withValues(alpha: 0.25),
-                          blurRadius: 18,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/img/mascot_head.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Headline
-                  Text(
-                    'EDITORIAL CONTROL GATE',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.2,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Subtitle
-                  Text(
-                    'Enter master PIN (default: 2026) or passphrase to manage dispatches, carousel highlights, and client inquiries.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: const Color(0xFF94A3B8),
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-
-                  // PIN Input Field
-                  TextField(
-                    controller: _pinController,
-                    obscureText: true,
-                    autofocus: true,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.spaceMono(
-                      color: Colors.white,
-                      fontSize: 22,
-                      letterSpacing: 8.0,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: '••••',
-                      hintStyle: GoogleFonts.spaceMono(
-                        color: AppTheme.textMuted,
-                        letterSpacing: 8.0,
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFF181820),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF26262B)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.neonCyan, width: 1.5),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                    ),
-                    onSubmitted: (_) => _verifyAccess(),
-                  ),
-
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      _errorMessage!,
-                      style: GoogleFonts.spaceMono(
-                        color: AppTheme.neonMagenta,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
+            child: AnimatedBuilder(
+              animation: _shakeAnimation,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(_shakeAnimation.value, 0),
+                  child: child,
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF121216),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF26262B), width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.neonViolet.withValues(alpha: 0.12),
+                      blurRadius: 30,
+                      spreadRadius: 2,
                     ),
                   ],
-
-                  const SizedBox(height: 24),
-
-                  // Unlock CTA Button (Gradient Pill)
-                  Container(
-                    width: double.infinity,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.buttonGradient,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.neonViolet.withValues(alpha: 0.35),
-                          blurRadius: 16,
-                          offset: const Offset(0, 3),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Robot Mascot Avatar
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1A24),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppTheme.neonCyan.withValues(alpha: 0.5),
+                          width: 1.5,
                         ),
-                      ],
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.neonCyan.withValues(alpha: 0.25),
+                            blurRadius: 18,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/img/mascot_head.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
+                    const SizedBox(height: 20),
+
+                    // Headline
+                    Text(
+                      'EDITORIAL CONTROL GATE',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Subtitle (Sanitized - unrevealing prompt)
+                    Text(
+                      'Enter authorization key to access the editorial control center.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: const Color(0xFF94A3B8),
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+
+                    // PIN / Key Input Field
+                    TextField(
+                      controller: _pinController,
+                      obscureText: true,
+                      autofocus: true,
+                      enabled: !_isProcessing,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.spaceMono(
+                        color: Colors.white,
+                        fontSize: 22,
+                        letterSpacing: 8.0,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: '••••••••',
+                        hintStyle: GoogleFonts.spaceMono(
+                          color: AppTheme.textMuted,
+                          letterSpacing: 8.0,
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFF181820),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF26262B)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppTheme.neonCyan, width: 1.5),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      ),
+                      onSubmitted: (_) => _verifyAccess(),
+                    ),
+
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        _errorMessage!,
+                        style: GoogleFonts.spaceMono(
+                          color: AppTheme.neonMagenta,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+
+                    const SizedBox(height: 24),
+
+                    // Unlock CTA Button (Gradient Pill)
+                    Container(
+                      width: double.infinity,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: AppTheme.buttonGradient,
                         borderRadius: BorderRadius.circular(24),
-                        onTap: _verifyAccess,
-                        child: Center(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.lock_open_rounded, size: 16, color: Colors.white),
-                              const SizedBox(width: 8),
-                              Text(
-                                'UNLOCK CONTROL CENTER',
-                                style: GoogleFonts.spaceMono(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.1,
-                                ),
-                              ),
-                            ],
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.neonViolet.withValues(alpha: 0.35),
+                            blurRadius: 16,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(24),
+                          onTap: _isProcessing ? null : _verifyAccess,
+                          child: Center(
+                            child: _isProcessing
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.lock_open_rounded, size: 16, color: Colors.white),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'UNLOCK CONTROL CENTER',
+                                        style: GoogleFonts.spaceMono(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 1.1,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
