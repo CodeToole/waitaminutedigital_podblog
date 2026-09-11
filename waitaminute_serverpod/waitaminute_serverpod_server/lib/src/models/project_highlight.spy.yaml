@@ -1,0 +1,22 @@
+### A featured portfolio project or client case study highlight.
+class: ProjectHighlight
+table: project_highlight
+fields:
+  ### Headline title of the project.
+  title: String
+  ### Client name or internal project label.
+  client: String
+  ### Concise summary of the project impact and tech stack.
+  summary: String
+  ### URL to the featured cover image.
+  coverImageUrl: String?
+  ### External link to live case study, app, or demo.
+  externalUrl: String?
+  ### Whether to showcase in the top horizontal carousel.
+  isFeatured: bool, default=false
+  ### Display order priority for sorting.
+  order: int, default=0
+
+indexes:
+  project_highlight_featured_idx:
+    fields: isFeatured

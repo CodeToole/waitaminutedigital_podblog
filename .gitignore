@@ -1,25 +1,55 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.so
+# ==============================================================================
+# Waitaminute Digital - Root GitIgnore (Serverpod + Flutter + Docker)
+# ==============================================================================
 
-# Virtual environment
-.venv/
-venv/
+# ------------------------------------------------------------------------------
+# Secrets & Sensitive Data (CRITICAL)
+# ------------------------------------------------------------------------------
+**/config/passwords.yaml
+**/.env*
+!**/.env.example
+**/docker_data/
+**/*.log
 
-# Django
-*.sqlite3
-db.sqlite3
-.env
-.env.*
-!.env.example
-staticfiles/
-media/
+# ------------------------------------------------------------------------------
+# Dart & Flutter Build / Tooling
+# ------------------------------------------------------------------------------
+**/.dart_tool/
+**/build/
+**/.flutter-plugins*
+**/.packages
+**/.pub-cache/
+**/.pub/
+**/coverage/
+**/*.symbols
+**/*.map.json
 
-# Editor / OS
+# Android Studio / Gradle artifacts
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/.gradle/
+**/local.properties
+
+# iOS / macOS build artifacts
+**/ios/Flutter/.last_build_id
+**/doc/api/
+
+# ------------------------------------------------------------------------------
+# Operating System & IDE Files
+# ------------------------------------------------------------------------------
 .vscode/
 .idea/
+*.iml
+*.ipr
+*.iws
 .DS_Store
 Thumbs.db
+*.swp
+*~
+
+# ------------------------------------------------------------------------------
+# AI Agent Workspaces
+# ------------------------------------------------------------------------------
+.agents/
+.cursor/

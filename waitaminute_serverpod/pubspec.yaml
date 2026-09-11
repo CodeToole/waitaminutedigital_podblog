@@ -1,0 +1,11 @@
+name: _
+publish_to: none
+
+environment:
+  sdk: '^3.8.0'
+
+workspace:
+  - waitaminute_serverpod_client
+  - waitaminute_serverpod_server
+  - waitaminute_serverpod_flutter
+

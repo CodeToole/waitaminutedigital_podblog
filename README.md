@@ -1,167 +1,108 @@
-<div align="center">
+# Waitaminute Digital - Editorial Publishing Platform & App
 
-# ⏱️ Waitaminute Digital
+A unified, high-performance Dart-first platform powering the editorial dispatches, interactive portfolio case studies, and client discovery intake pipeline for [Waitaminute Digital](https://waitaminutedigital.com).
 
-### Built for creators. Engineered for modern work.
-
-The official website and portfolio platform for **Waitaminute Digital** — a Mobile, Alabama studio that
-architects modern work systems: conversion-focused websites, AI & automation, and Microsoft 365–powered workflows.
-
-![Python](https://img.shields.io/badge/Python-3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/Django-6.1-092E20?style=for-the-badge&logo=django&logoColor=white)
-![HTMX](https://img.shields.io/badge/HTMX-1.x-3366CC?style=for-the-badge&logo=htmx&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
-![Azure](https://img.shields.io/badge/Azure-Ready-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)
-
-</div>
+Built entirely in Dart across both backend and client, replacing legacy monoliths with a modern, type-safe, and reactive architecture.
 
 ---
 
-## 📖 Overview
+## Tech Stack
 
-This is the full-stack Django web application powering [waitaminutedigital.com](https://waitaminutedigital.com) — featuring a marketing site, a filterable project portfolio, a self-managed blog/CMS,
-and a consultation-based lead funnel. It is configured for deployment on **Azure App Service** with **Azure Database for
-PostgreSQL**, and doubles as a live demonstration of modern web solutions.
-
-**Designed & built by [Cornelius "Neil" Toole](https://www.linkedin.com/in/corneliustoole/)** — Founder & Lead
-AI Collaborator, Waitaminute Digital.
-
----
-
-## ✨ Features
-
-- 🎨 **Custom brand design system** — dark-first UI with a neon cyan → electric purple palette, hand-written CSS tokens (no framework bloat), Space Grotesk / Inter / Space Mono typography.
-- 🧩 **Interactive without a JS framework** — HTMX powers live portfolio **tag filtering**, blog **live search**, and inline **form submits** with zero page reloads.
-- 📝 **Self-managed blog / CMS** — post articles and news straight from the Django admin (drafts vs. published, categories, cover images).
-- 💼 **Filterable project portfolio** — real case studies with tag facets (Web · Brand · Strategy · Automation) and detail pages.
-- 📞 **Consult-first lead funnel** — no public pricing; a "Book a Discovery Call" flow captures leads into the database for follow-up and custom quoting.
-- 🔎 **SEO-ready** — per-page meta + Open Graph tags, `sitemap.xml`, `robots.txt`, canonical URLs.
-- 🤖 **Branded error pages** — custom 404 / 500 featuring the studio mascot.
-- ☁️ **Azure-ready deployment** — Gunicorn + WhiteNoise, environment-based config, PostgreSQL support.
+| Layer | Technologies |
+|---|---|
+| **Backend Framework** | [Serverpod 2](https://serverpod.dev) (Dart 3 backend, RPC & ORM) |
+| **Database & Cache** | PostgreSQL 16, Redis |
+| **Frontend Client** | [Flutter 3](https://flutter.dev) (Dart 3, Multi-Platform: Web & Mobile) |
+| **Styling & Design** | Cyber-editorial tokens, Google Fonts (`Space Grotesk`, `Space Mono`, `Inter`), responsive layout |
+| **Deployment & Containers** | Docker, Docker Compose, Azure Container Apps / Web Apps |
 
 ---
 
-## 🛠️ Tech Stack
-
-| Layer            | Technology                                   |
-| ---------------- | -------------------------------------------- |
-| Language         | Python 3.14+                                 |
-| Framework        | Django 6.1                                   |
-| Interactivity    | HTMX                                         |
-| Styling          | Hand-written CSS (brand design tokens)       |
-| Database         | PostgreSQL (SQLite supported for dev)        |
-| Prod server      | Gunicorn + WhiteNoise                        |
-| Hosting          | Azure App Service (Linux) + Azure DB for PostgreSQL |
-| Config / secrets | python-dotenv (`.env`)                       |
-
----
-
-## 🗂️ Project Structure
+## Architecture Overview
 
 ```
-.
-├── waitaminute/        # Project config (settings, urls, wsgi, asgi)
-├── core/               # Home, About, Contact
-├── portfolio/          # Project model + HTMX tag filtering
-├── blog/               # Post + Category models + HTMX live search
-├── services/           # Service cards + "Book a Discovery Call"
-├── leads/              # Lead capture (consultation funnel)
-├── templates/          # base.html + page/error templates
-├── static/             # CSS tokens, brand assets, favicons
-├── docs/               # Architecture & media storage guides
-├── .env.example        # Environment variable template (safe placeholders)
-├── requirements.txt
-└── manage.py
+waitaminutedigital_podblog/
+├── waitaminute_serverpod/            # Serverpod 2 Backend Service
+│   ├── waitaminute_serverpod_server/ # Core server endpoints, ORM models & migrations
+│   │   ├── lib/src/endpoints/        # RPC Endpoints (Article, ProjectHighlight, Lead)
+│   │   ├── lib/src/models/           # YAML-defined data models & generated entities
+│   │   ├── config/                   # Environment configs (development, staging, production)
+│   │   └── docker-compose.yaml       # Local PostgreSQL + Redis infrastructure
+│   ├── waitaminute_serverpod_client/ # Auto-generated typed client SDK
+│   └── waitaminute_serverpod_flutter/# Helper bindings for Flutter integration
+│
+└── waitaminute_flutter/              # Flutter 3 Client (Web & Mobile)
+    ├── lib/
+    │   ├── admin/                    # Admin Control Center (Dispatches, Highlights, Leads)
+    │   │   ├── admin_auth_gate.dart  # Direct URL PIN protection gate (/admin)
+    │   │   ├── admin_layout.dart     # Responsive tabbed control center
+    │   │   ├── articles_manager.dart # Editorial article management (CRUD)
+    │   │   ├── highlights_manager.dart # Project highlight showcase management
+    │   │   └── inquiries_viewer.dart # Prospect intake inquiries viewer
+    │   ├── models/                   # Local domain models & fallback seeds
+    │   ├── services/                 # ServerpodClient singleton & offline fallback service
+    │   ├── theme/                    # Cyber-editorial palette (#0A0A0C, #7928CA, #00DFD8)
+    │   ├── widgets/                  # PeekingCarousel (4:5 media cards), ArticleCard, LeadIntakeModal
+    │   └── main.dart                 # App initialization, routing & home dashboard
+    └── assets/img/                   # Robot mascot branding & media assets
 ```
+
+### 1. All-in-One Container Backend (`waitaminute_serverpod`)
+- **Serverpod Endpoints**:
+  - `ArticleEndpoint`: Public article retrieval with category filtering, plus administrative CRUD for drafting and publishing articles.
+  - `ProjectHighlightEndpoint`: Featured case studies and portfolio showcase management.
+  - `LeadEndpoint`: Public consultation intake form submission with honeypot spam protection, plus secure administrative review of prospect leads.
+- **Single-Command Docker Orchestration**: Local development provisions containerized PostgreSQL and Redis automatically.
+- **Type Safety**: Database tables, serialized JSON, and Flutter client bindings are compiled directly from declarative YAML models via `serverpod generate`.
+
+### 2. Modern Editorial Client (`waitaminute_flutter`)
+- **Responsive Cyber-Editorial UI**: Dark aesthetic engineered with `#0A0A0C` background, `#16161E` elevated surfaces, neon violet/cyan gradients, and typography powered by Google Fonts.
+- **IGN-Style Peeking Carousel**: Desktop-constrained 4:5 portrait media cards (~300px x 400px), floating directional arrows (`<` and `>`), smooth scrolling, and touch/mouse dragging support.
+- **Direct Route Admin Control Center (`/admin`)**:
+  - Pure route access: Navigating directly to `/admin` renders a dedicated PIN/Passphrase authentication gate.
+  - Zero visible links, badges, or secret triggers exposed on public pages.
+  - Full CRUD controls for editorial content, project case studies, and lead inquiries.
+- **Resilient Offline Fallback**: Client gracefully operates against local memory caches if the backend container is offline.
 
 ---
 
-## 🚀 Local Setup
+## Getting Started
 
-> **Prerequisites:** Python 3.14+, PostgreSQL or SQLite, and Git.
+### Prerequisites
+- [Dart SDK](https://dart.dev/get-dart) (>= 3.0.0)
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (>= 3.20.0)
+- [Docker & Docker Compose](https://www.docker.com/)
+- [Serverpod CLI](https://docs.serverpod.dev/get-started):
+  ```bash
+  dart pub global activate serverpod_cli
+  ```
 
+### 1. Start the Backend Infrastructure
 ```bash
-# 1. Clone
-git clone https://github.com/CodeToole/WaitaminuteDigital_blog.git
-cd WaitaminuteDigital_blog
-
-# 2. Create & activate a virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Configure environment
-# Copy the template, then fill in YOUR local development values
-cp .env.example .env
-
-# 5. Set up the database & collect static files
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py collectstatic
-
-# 6. Run local server
-python manage.py runserver
+cd waitaminute_serverpod/waitaminute_serverpod_server
+docker compose up --build -d
+dart bin/main.dart
 ```
+The Serverpod backend will launch on `http://localhost:8080` (API) and `http://localhost:8082` (Web server / Insights).
 
-Visit **http://127.0.0.1:8000** for the site and **http://127.0.0.1:8000/admin** for the CMS.
+### 2. Run the Flutter Client
+In a separate terminal:
+```bash
+cd waitaminute_flutter
+flutter pub get
+flutter run -d chrome
+```
+Open your browser at the assigned localhost port (e.g. `http://localhost:60428`).
 
----
-
-## 🔐 Environment Variables
-
-All secrets live in a local `.env` file (which is **git-ignored**). Copy `.env.example` and fill in your own local values:
-
-| Variable        | Description                                  |
-| --------------- | -------------------------------------------- |
-| `DJANGO_SECRET_KEY` | Django cryptographic signing key             |
-| `DEBUG`         | `True` for local dev, `False` in production  |
-| `ALLOWED_HOSTS` | Comma-separated hostnames                     |
-| `DB_NAME`       | PostgreSQL database name                      |
-| `DB_USER`       | PostgreSQL user                               |
-| `DB_PASSWORD`   | PostgreSQL password                           |
-| `DB_HOST`       | DB host (`localhost` for dev)                 |
-| `DB_PORT`       | DB port (`5432` default)                      |
-| `USE_SQLITE`    | `True` to use local SQLite database           |
-
-> ⚠️ Never commit your real `.env`. Only `.env.example` (safe placeholders) belongs in version control.
+### 3. Accessing the Admin Panel
+Navigate directly in your browser address bar to:
+```
+http://localhost:60428/#/admin
+```
+Enter the master PIN (`2026`) or passphrase (`waitaminute`) to unlock the editorial control dashboard.
 
 ---
 
-## 🛡️ Security Policy
-
-Please refer to [SECURITY.md](SECURITY.md) for details on responsible vulnerability disclosure and security guidelines.
-
----
-
-## 💼 Featured Client Work
-
-This portfolio showcases real projects delivered by Waitaminute Digital:
-
-- 🎬 **[The Acting Collective](https://theactingcollective.vip)** — a registration & check-in platform for an in-person actor-training intensive.
-- 🎤 **[Unicorn Bounty Hunters](https://unicornbountyhunters.com)** — a studio-booking and artist-roster site for an independent Mobile music collective.
-- 🎶 **[Huncho Fest](https://hunchofest.com)** — the event + artist-registration site for Mobile's largest independent music festival.
-
----
-
-## 🗺️ Roadmap
-
-- [ ] Newsletter / email capture integration
-- [ ] Automated lead notification workflows
-- [ ] Integration with Microsoft Bookings for scheduling
-
----
-
-## 📄 License
-
-© Waitaminute Digital. All rights reserved.
-
----
-
-<div align="center">
-
-**Waitaminute Digital** · Mobile, Alabama
-[Website](https://waitaminutedigital.com) · [LinkedIn](https://www.linkedin.com/in/corneliustoole/) · [GitHub](https://github.com/CodeToole)
-
-</div>
+## License & Attribution
+© 2026 Waitaminute Digital. All rights reserved.
+Built and maintained by Cornelius Toole.

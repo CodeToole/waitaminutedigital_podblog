@@ -1,0 +1,27 @@
+### An editorial article or devlog entry for Waitaminute Digital.
+class: Article
+table: article
+fields:
+  ### The title of the article.
+  title: String
+  ### The URL slug for the article.
+  slug: String
+  ### Short summary / lead paragraph.
+  summary: String
+  ### Full article content formatted in Markdown.
+  body: String
+  ### Editorial category badge (e.g. ARCHITECTURE, POST-MORTEM, SHIPPED).
+  badge: String
+  ### Optional URL to the cover banner image.
+  coverImageUrl: String?
+  ### Optional YouTube video URL or ID for embedded devlogs.
+  youtubeUrl: String?
+  ### Publication status flag.
+  isPublished: bool, default=false
+  ### Timestamp when the article was published.
+  publishedAt: DateTime?
+
+indexes:
+  article_slug_unique_idx:
+    fields: slug
+    unique: true

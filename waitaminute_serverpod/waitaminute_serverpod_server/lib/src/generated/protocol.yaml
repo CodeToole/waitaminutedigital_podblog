@@ -1,0 +1,30 @@
+emailIdp:
+  - login:
+  - startRegistration:
+  - verifyRegistrationCode:
+  - finishRegistration:
+  - startPasswordReset:
+  - verifyPasswordResetCode:
+  - finishPasswordReset:
+  - hasAccount:
+jwtRefresh:
+  - refreshAccessToken:
+article:
+  - getArticles:
+  - getArticleById:
+  - saveArticle:
+  - deleteArticle:
+content:
+  - getFeaturedProjects:
+  - getPublishedArticles:
+  - getArticleBySlug:
+  - submitLeadInquiry:
+lead:
+  - submitInquiry:
+  - getInquiries:
+projectHighlight:
+  - getHighlights:
+  - saveHighlight:
+  - deleteHighlight:
+greeting:
+  - hello:

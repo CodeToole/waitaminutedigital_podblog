@@ -1,0 +1,14 @@
+### A customer lead inquiry submitted from the mobile or web discovery intake.
+class: LeadInquiry
+table: lead_inquiry
+fields:
+  ### Contact name of the prospect.
+  name: String
+  ### Contact email address.
+  email: String
+  ### High-level project category (e.g. Mobile App, Backend Architecture, Cloud Migration).
+  projectType: String
+  ### Detailed project scope or inquiry message.
+  message: String
+  ### Timestamp when the inquiry was received.
+  createdAt: DateTime, default=now

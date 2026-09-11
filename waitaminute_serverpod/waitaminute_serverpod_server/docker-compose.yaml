@@ -1,0 +1,44 @@
+services:
+  # Development services
+  postgres:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "8090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: waitaminute_serverpod
+      POSTGRES_PASSWORD: "yzaPoc_8ulI3O0Ro5CEzJHVDV8B0jib4"
+    volumes:
+      - waitaminute_serverpod_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6.2.6
+    ports:
+      - "8091:6379"
+    command: redis-server --requirepass "r_FnYOvS9pbav0NM1uDcW5c3N8txmdZm"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+  # Test services
+  postgres_test:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "9090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: waitaminute_serverpod_test
+      POSTGRES_PASSWORD: "a50qo8jaaXr8RKlSfFa93LRa-VG3MsGb"
+    volumes:
+      - waitaminute_serverpod_test_data:/var/lib/postgresql/data
+
+  redis_test:
+    image: redis:6.2.6
+    ports:
+      - "9091:6379"
+    command: redis-server --requirepass "Y3LBZ-gT6ummYXdfRJ6etq_6dMo9Tfxm"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+volumes:
+  waitaminute_serverpod_data:
+  waitaminute_serverpod_test_data:

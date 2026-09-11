@@ -1,0 +1,259 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../theme/app_theme.dart';
+import 'admin_layout.dart';
+
+/// Cyber-editorial PIN / Passphrase Gate protecting access to the admin dashboard.
+class AdminAuthGate extends StatefulWidget {
+  const AdminAuthGate({super.key});
+
+  @override
+  State<AdminAuthGate> createState() => _AdminAuthGateState();
+}
+
+class _AdminAuthGateState extends State<AdminAuthGate> {
+  final TextEditingController _pinController = TextEditingController();
+  bool _isAuthenticated = false;
+  String? _errorMessage;
+
+  // Master credentials
+  static const String _defaultPin = '2026';
+  static const String _passphrase = 'waitaminute';
+
+  @override
+  void dispose() {
+    _pinController.dispose();
+    super.dispose();
+  }
+
+  void _verifyAccess() {
+    final input = _pinController.text.trim().toLowerCase();
+    if (input == _defaultPin || input == _passphrase) {
+      setState(() {
+        _isAuthenticated = true;
+        _errorMessage = null;
+      });
+    } else {
+      setState(() {
+        _errorMessage = 'Invalid PIN / passphrase. Use 2026 or waitaminute.';
+      });
+      _pinController.clear();
+    }
+  }
+
+  void _lock() {
+    setState(() {
+      _isAuthenticated = false;
+      _pinController.clear();
+      _errorMessage = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isAuthenticated) {
+      return AdminLayout(onLock: _lock);
+    }
+
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0A0A0C),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white70),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              Navigator.of(context).pushReplacementNamed('/');
+            }
+          },
+          tooltip: 'Back to Site',
+        ),
+        title: Text(
+          'ADMIN AUTHENTICATION',
+          style: GoogleFonts.spaceGrotesk(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.1,
+          ),
+        ),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1, color: Color(0xFF1F1E24)),
+        ),
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: const Color(0xFF121216),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFF26262B), width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.neonViolet.withValues(alpha: 0.12),
+                    blurRadius: 30,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Robot Mascot Avatar
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A1A24),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppTheme.neonCyan.withValues(alpha: 0.5),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.neonCyan.withValues(alpha: 0.25),
+                          blurRadius: 18,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/img/mascot_head.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Headline
+                  Text(
+                    'EDITORIAL CONTROL GATE',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Subtitle
+                  Text(
+                    'Enter master PIN (default: 2026) or passphrase to manage dispatches, carousel highlights, and client inquiries.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: const Color(0xFF94A3B8),
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // PIN Input Field
+                  TextField(
+                    controller: _pinController,
+                    obscureText: true,
+                    autofocus: true,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.spaceMono(
+                      color: Colors.white,
+                      fontSize: 22,
+                      letterSpacing: 8.0,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: '••••',
+                      hintStyle: GoogleFonts.spaceMono(
+                        color: AppTheme.textMuted,
+                        letterSpacing: 8.0,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFF181820),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF26262B)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.neonCyan, width: 1.5),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                    ),
+                    onSubmitted: (_) => _verifyAccess(),
+                  ),
+
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      _errorMessage!,
+                      style: GoogleFonts.spaceMono(
+                        color: AppTheme.neonMagenta,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+
+                  const SizedBox(height: 24),
+
+                  // Unlock CTA Button (Gradient Pill)
+                  Container(
+                    width: double.infinity,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.buttonGradient,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.neonViolet.withValues(alpha: 0.35),
+                          blurRadius: 16,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(24),
+                        onTap: _verifyAccess,
+                        child: Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.lock_open_rounded, size: 16, color: Colors.white),
+                              const SizedBox(width: 8),
+                              Text(
+                                'UNLOCK CONTROL CENTER',
+                                style: GoogleFonts.spaceMono(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
