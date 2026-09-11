@@ -1,0 +1,31 @@
+# ==============================================================================
+# Waitaminute Digital - Docker Build Ignore
+# ==============================================================================
+.git
+.gitignore
+.dockerignore
+README.md
+
+# Dart & Flutter local caches
+**/.dart_tool/
+**/build/
+**/.pub-cache/
+**/.pub/
+**/.flutter-plugins*
+**/.packages
+
+# Secrets and local configurations
+**/config/passwords.yaml
+**/.env*
+!**/.env.example
+**/docker_data/
+**/*.log
+
+# IDE & system metadata
+.vscode/
+.idea/
+.agents/
+.cursor/
+*.iml
+.DS_Store
+Thumbs.db

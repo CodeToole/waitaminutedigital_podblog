@@ -7,5 +7,4 @@ environment:
 workspace:
   - waitaminute_serverpod_client
   - waitaminute_serverpod_server
-  - waitaminute_serverpod_flutter
 

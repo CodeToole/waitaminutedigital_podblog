@@ -6,10 +6,11 @@
 
 # Configuration for the main API server.
 apiServer:
-  port: 8080
-  publicHost: api.examplepod.com
+  port: 8090
+  publicHost: waitaminutedigital.com
   publicPort: 443
   publicScheme: https
+  publicPath: /api
 
 # Configuration for the Insights server.
 insightsServer:
@@ -21,7 +22,7 @@ insightsServer:
 # Configuration for the web server.
 webServer:
   port: 8082
-  publicHost: app.examplepod.com
+  publicHost: waitaminutedigital.com
   publicPort: 443
   publicScheme: https
 

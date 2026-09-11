@@ -1,0 +1,16 @@
+:8080 {
+	# WebSocket connections routed directly to Serverpod API Server
+	handle /websocket* {
+		reverse_proxy 127.0.0.1:8090
+	}
+
+	# Strip /api prefix and forward RPC endpoint calls to Serverpod API Server
+	handle_path /api/* {
+		reverse_proxy 127.0.0.1:8090
+	}
+
+	# All other requests (Flutter Web SPA, assets, dispatches) routed to Serverpod Web Server
+	handle {
+		reverse_proxy 127.0.0.1:8082
+	}
+}

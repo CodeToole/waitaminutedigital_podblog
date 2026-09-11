@@ -86,7 +86,40 @@ flutter run -d chrome
 ```
 Open your browser at the assigned localhost port (e.g. `http://localhost:60428`).
 
+### 3. Production Container Build (Option A: All-in-One Container)
+To compile both the Flutter web client and the Serverpod server into a unified production container image:
+```bash
+docker build -f waitaminute_serverpod/waitaminute_serverpod_server/Dockerfile -t waitaminutedigital:latest .
+```
+Run the production container locally or in staging:
+```bash
+docker run -p 8080:8080 -p 8082:8082 \
+  -e runmode=production \
+  waitaminutedigital:latest
+```
+
 ---
+
+## Production Deployment & Port Alignment
+
+### Serverpod Port Architecture
+- **API Server (`8080`)**: Dedicated to RPC method invocations (`ArticleEndpoint`, `ProjectHighlightEndpoint`, `LeadEndpoint`) and real-time WebSockets.
+- **Insights Server (`8081`)**: Internal diagnostic telemetry and health dashboard.
+- **Web Server (`8082`)**: Hosts the compiled Flutter Web application (`FlutterRoute` mounted at `/` and `/app`), index fallback, and static assets with automatic cache-control headers.
+
+### Azure App Service Single-Port Routing
+Azure App Service routes external web traffic through a single port specified by `WEBSITES_PORT`:
+1. **Direct Web Access (`WEBSITES_PORT=8082`)**:
+   Sets the frontend web application as the primary ingress target on port 8082.
+2. **Reverse Proxy Setup (Recommended for Single-Domain Deployments)**:
+   When routing both API (`8080`) and Web (`8082`) through a single external domain (e.g. `waitaminutedigital.com`), deploy a reverse proxy (Caddy / Nginx) or Azure Front Door / Application Gateway rule:
+   - Route `/websocket` and RPC endpoint paths to backend port `8080`.
+   - Route all remaining paths (`/*`) to backend web port `8082`.
+3. **Automatic Startup Migrations**:
+   The container `ENTRYPOINT` automatically executes database migrations on container startup:
+   ```dockerfile
+   ENTRYPOINT ["./server", "--mode=production", "--apply-migrations", "--role=monolith"]
+   ```
 
 ## License & Attribution
 © 2026 Waitaminute Digital. All rights reserved.

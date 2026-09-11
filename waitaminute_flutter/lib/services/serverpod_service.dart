@@ -18,10 +18,16 @@ class ServerpodService {
   }
 
   /// Resolves the host URL based on running platform:
+  /// - Web in release mode uses the same origin with /api/ prefix.
+  /// - Web in debug mode falls back to local server at http://localhost:8080/.
   /// - Android emulator uses 10.0.2.2:8080 to reach host machine loopback.
-  /// - Desktop, Web, and iOS simulator use localhost:8080.
+  /// - Desktop and iOS simulator use localhost:8080.
   static String _resolveServerUrl() {
     if (kIsWeb) {
+      if (kReleaseMode) {
+        final origin = Uri.base.origin;
+        return '$origin/api/';
+      }
       return 'http://localhost:8080/';
     }
     switch (defaultTargetPlatform) {
