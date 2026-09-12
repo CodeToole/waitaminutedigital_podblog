@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:waitaminute_serverpod_client/waitaminute_serverpod_client.dart';
-import '../screens/article_reader_screen.dart';
+import 'package:waitaminute_flutter/screens/article_reader_screen.dart';
 import '../theme/app_theme.dart';
 import 'badge_tag.dart';
 
@@ -16,17 +16,17 @@ class ArticleCard extends StatelessWidget {
     this.onTap,
   });
 
-  void _handleTap(BuildContext context) {
+  void _openArticle(BuildContext context) {
     if (onTap != null) {
       onTap!();
-    } else {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => ArticleReaderScreen(article: article),
-          settings: RouteSettings(name: '/article/${article.slug}'),
-        ),
-      );
+      return;
     }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ArticleReaderScreen(article: article),
+        settings: RouteSettings(name: '/article/${article.slug}'),
+      ),
+    );
   }
 
   @override
@@ -46,7 +46,7 @@ class ArticleCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
-          onTap: () => _handleTap(context),
+          onTap: () => _openArticle(context),
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
@@ -107,7 +107,7 @@ class ArticleCard extends StatelessWidget {
                 // Action link ("READ ARTICLE >")
                 InkWell(
                   borderRadius: BorderRadius.circular(4),
-                  onTap: () => _handleTap(context),
+                  onTap: () => _openArticle(context),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 2),
                     child: Row(

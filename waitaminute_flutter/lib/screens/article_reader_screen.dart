@@ -58,9 +58,11 @@ class _ArticleReaderScreenState extends State<ArticleReaderScreen> {
   }
 
   String _getShareUrl(Article article) {
-    if (kIsWeb) {
-      return '${Uri.base.origin}/#/article/${article.slug}';
-    }
+    try {
+      if (kIsWeb && (Uri.base.scheme == 'http' || Uri.base.scheme == 'https')) {
+        return '${Uri.base.origin}/#/article/${article.slug}';
+      }
+    } catch (_) {}
     return 'https://waitaminutedigital.com/#/article/${article.slug}';
   }
 

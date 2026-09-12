@@ -32,24 +32,29 @@ class WaitaminuteApp extends StatelessWidget {
           PointerDeviceKind.stylus,
         },
       ),
-      initialRoute: '/',
       routes: {
         '/': (context) => const HomeScreen(),
         '/admin': (context) => const AdminAuthGate(),
       },
       onGenerateRoute: (settings) {
-        if (settings.name == '/admin') {
+        final name = settings.name ?? '';
+        final cleanName = name.startsWith('/#')
+            ? name.substring(2)
+            : (name.startsWith('#') ? name.substring(1) : name);
+
+        if (cleanName == '/admin' || cleanName == 'admin') {
           return MaterialPageRoute(
             builder: (_) => const AdminAuthGate(),
             settings: settings,
           );
         }
-        if (settings.name != null && settings.name!.startsWith('/article/')) {
-          final slug = settings.name!.replaceFirst('/article/', '');
+        if (cleanName.startsWith('/article/') || cleanName.startsWith('article/')) {
+          final rawSlug = cleanName.replaceFirst(RegExp(r'^/?article/'), '');
+          final slug = rawSlug.split('?').first.replaceAll(RegExp(r'/+$'), '');
           return MaterialPageRoute(
             builder: (_) => ArticleReaderScreen(
               article: settings.arguments as Article?,
-              slug: slug,
+              slug: slug.isNotEmpty ? slug : null,
             ),
             settings: settings,
           );
@@ -491,14 +496,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               final article = _articles[index];
                               return ArticleCard(
                                 article: article,
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => ArticleReaderScreen(article: article),
-                                      settings: RouteSettings(name: '/article/${article.slug}'),
-                                    ),
-                                  );
-                                },
                               );
                             },
                             childCount: _articles.length,
